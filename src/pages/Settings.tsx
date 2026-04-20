@@ -113,6 +113,32 @@ export default function SettingsPage() {
             </div>
           ))}
         </div>
+        <div>
+          <Label className="text-sm">Langues à réviser</Label>
+          <Select
+            value={s.lang_pair_filter ? `${s.lang_pair_filter.src}→${s.lang_pair_filter.dest}` : "all"}
+            onValueChange={(v) => {
+              if (v === "all") patch({ lang_pair_filter: null });
+              else {
+                const [src, dest] = v.split("→");
+                patch({ lang_pair_filter: { src, dest } });
+              }
+            }}
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les langues</SelectItem>
+              {pairs.map((p) => (
+                <SelectItem key={`${p.src}→${p.dest}`} value={`${p.src}→${p.dest}`}>
+                  {p.src} → {p.dest} ({p.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Combiné avec « Direction », vous pouvez aussi être interrogé dans le sens inverse.
+          </p>
+        </div>
       </CardContent></Card>
 
       <Card className="shadow-card"><CardContent className="p-4 sm:p-6 space-y-3">
