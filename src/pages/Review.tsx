@@ -9,12 +9,17 @@ import { applyReview, type Quality } from "@/lib/srs";
 import { Flashcard } from "@/components/review/Flashcard";
 import { TypingCard } from "@/components/review/TypingCard";
 import { MultipleChoiceCard } from "@/components/review/MultipleChoiceCard";
-import { Loader2, PartyPopper } from "lucide-react";
+import { EditCardDialog } from "@/components/review/EditCardDialog";
+import { SessionRecap, type RecapEntry } from "@/components/review/SessionRecap";
+import { Loader2, PartyPopper, Pencil } from "lucide-react";
+import type { Card as CardType } from "@/types/card";
 
 export default function Review() {
   const [items, setItems] = useState<SessionItem[] | null>(null);
   const [idx, setIdx] = useState(0);
   const [stats, setStats] = useState({ correct: 0, total: 0 });
+  const [recap, setRecap] = useState<RecapEntry[]>([]);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -55,27 +60,18 @@ export default function Review() {
   }
 
   if (idx >= items.length) {
-    const pct = stats.total ? Math.round((stats.correct / stats.total) * 100) : 0;
-    return (
-      <Card className="shadow-card">
-        <CardContent className="p-8 text-center space-y-3">
-          <PartyPopper className="h-10 w-10 mx-auto text-primary" />
-          <h2 className="text-xl font-semibold">Session terminée !</h2>
-          <p className="text-sm text-muted-foreground">
-            {stats.correct} / {stats.total} ({pct}%)
-          </p>
-          <div className="flex gap-2 justify-center">
-            <Button onClick={() => location.reload()}>Nouvelle session</Button>
-            <Button asChild variant="outline">
-              <Link to="/">Accueil</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <SessionRecap entries={recap} stats={stats} onRestart={() => location.reload()} />;
   }
 
   const current = items[idx];
+
+  function updateCurrentCard(updated: CardType) {
+    setItems((prev) =>
+      prev
+        ? prev.map((it, i) => (i === idx ? { ...it, card: updated } : it))
+        : prev,
+    );
+  }
 
   async function answer(q: Quality, correct: boolean) {
     const card = current.card;
@@ -98,6 +94,19 @@ export default function Review() {
       correct,
     });
     setStats((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
+    setRecap((r) => [
+      ...r,
+      {
+        cardId: card.id!,
+        text_src: card.text_src,
+        text_dest: card.text_dest,
+        lang_src: card.lang_src,
+        lang_dest: card.lang_dest,
+        direction: current.direction,
+        mode: current.mode,
+        correct,
+      },
+    ]);
     setIdx((i) => i + 1);
   }
 
@@ -109,9 +118,19 @@ export default function Review() {
         <p className="text-sm text-muted-foreground">
           {idx + 1} / {items.length} · <span className="capitalize">{current.mode}</span>
         </p>
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/">Quitter</Link>
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setEditing(true)}
+            aria-label="Modifier la carte"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/">Quitter</Link>
+          </Button>
+        </div>
       </div>
       <Progress value={progress} />
 
@@ -129,6 +148,13 @@ export default function Review() {
           onAnswer={answer}
         />
       )}
+
+      <EditCardDialog
+        card={current.card}
+        open={editing}
+        onOpenChange={setEditing}
+        onSaved={updateCurrentCard}
+      />
     </div>
   );
 }
