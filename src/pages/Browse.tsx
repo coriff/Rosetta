@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Pencil, Filter } from "lucide-react";
+import { Trash2, Pencil, Filter, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { EditCardDialog } from "@/components/review/EditCardDialog";
+import { AddCardDialog } from "@/components/browse/AddCardDialog";
 import { isNew, isDue } from "@/lib/srs";
 import type { Card as CardType, Category } from "@/types/card";
 
@@ -50,6 +51,7 @@ export default function Browse() {
   const [sort, setSort] = useState<SortKey>("recent");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<CardType | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const allCards = useLiveQuery(() => db.cards.toArray(), [], []);
 
@@ -58,6 +60,11 @@ export default function Browse() {
     (allCards ?? []).forEach((c) => set.add(`${c.lang_src}→${c.lang_dest}`));
     return Array.from(set).sort();
   }, [allCards]);
+
+  const knownPairs = useMemo(
+    () => langPairs.map((p) => { const [src, dest] = p.split("→"); return { src, dest }; }),
+    [langPairs],
+  );
 
   const filtered = useMemo(() => {
     if (!allCards) return [];
@@ -116,11 +123,16 @@ export default function Browse() {
             {filtered.length} / {allCards?.length ?? 0} carte(s)
           </p>
         </div>
-        {(status !== "all" || category !== "all" || pair !== "all" || interval !== "all" || q) && (
-          <Button variant="ghost" size="sm" onClick={resetFilters}>
-            Réinitialiser les filtres
+        <div className="flex items-center gap-2">
+          {(status !== "all" || category !== "all" || pair !== "all" || interval !== "all" || q) && (
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              Réinitialiser
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setAdding(true)}>
+            <Plus className="h-4 w-4" /> Ajouter
           </Button>
-        )}
+        </div>
       </header>
 
       <Card className="shadow-card">
@@ -246,6 +258,8 @@ export default function Browse() {
           onOpenChange={(o) => !o && setEditing(null)}
         />
       )}
+
+      <AddCardDialog open={adding} onOpenChange={setAdding} knownPairs={knownPairs} />
     </div>
   );
 }
