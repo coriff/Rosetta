@@ -51,6 +51,7 @@ export default function Browse() {
   const [sort, setSort] = useState<SortKey>("recent");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<CardType | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const allCards = useLiveQuery(() => db.cards.toArray(), [], []);
 
@@ -59,6 +60,11 @@ export default function Browse() {
     (allCards ?? []).forEach((c) => set.add(`${c.lang_src}→${c.lang_dest}`));
     return Array.from(set).sort();
   }, [allCards]);
+
+  const knownPairs = useMemo(
+    () => langPairs.map((p) => { const [src, dest] = p.split("→"); return { src, dest }; }),
+    [langPairs],
+  );
 
   const filtered = useMemo(() => {
     if (!allCards) return [];
