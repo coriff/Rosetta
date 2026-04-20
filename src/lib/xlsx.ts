@@ -3,6 +3,7 @@ import type { Card, Category } from "@/types/card";
 import { db } from "./db";
 import { newCardSRS } from "./srs";
 import { detectCategory, parseAlts } from "./normalize";
+import { cleanRawRows, isRawGoogleFormat, type CleaningReport } from "./clean";
 
 export interface RawRow {
   [key: string]: unknown;
@@ -17,13 +18,39 @@ export interface ColumnMapping {
   alt_columns: string[]; // header names for alt1..altN
 }
 
-export async function readWorkbook(file: File): Promise<{ headers: string[]; rows: RawRow[] }> {
+export interface ReadResult {
+  headers: string[];
+  rows: RawRow[];
+  /** present when the file was detected as a raw Google Translate export and auto-cleaned */
+  cleaningReport?: CleaningReport;
+  /** true when columns/rows were synthesised by the cleaner (skip column mapping UI) */
+  preMapped?: boolean;
+}
+
+export async function readWorkbook(file: File): Promise<ReadResult> {
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type: "array" });
   const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json<RawRow>(sheet, { defval: "" });
-  const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
-  return { headers, rows };
+
+  // First read with default header detection
+  const objRows = XLSX.utils.sheet_to_json<RawRow>(sheet, { defval: "" });
+  const headers = objRows.length > 0 ? Object.keys(objRows[0]) : [];
+
+  // Detect the raw Google Translate "Saved translations" export
+  if (isRawGoogleFormat(headers, objRows[0])) {
+    // Re-read as a matrix (no header) so we don't lose the first row that was eaten as header
+    const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" });
+    const { rows: cleaned, report } = cleanRawRows(matrix);
+    const synth: RawRow[] = cleaned.map((r) => ({ ...r }));
+    return {
+      headers: ["lang_src", "lang_dest", "text_src", "text_dest"],
+      rows: synth,
+      cleaningReport: report,
+      preMapped: true,
+    };
+  }
+
+  return { headers, rows: objRows };
 }
 
 export function autoDetectMapping(headers: string[]): ColumnMapping {
