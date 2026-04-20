@@ -61,7 +61,10 @@ export function AddCardDialog({ open, onOpenChange, knownPairs }: Props) {
         return;
       }
       await db.cards.add({
-        ...parsed.data,
+        text_src: parsed.data.text_src,
+        text_dest: parsed.data.text_dest,
+        lang_src: parsed.data.lang_src,
+        lang_dest: parsed.data.lang_dest,
         category,
         alts,
         ...newCardSRS(),
