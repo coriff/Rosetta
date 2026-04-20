@@ -12,11 +12,25 @@ import type { Settings } from "@/types/card";
 import { toast } from "sonner";
 import { Download, RotateCcw, Trash2 } from "lucide-react";
 
+type Pair = { src: string; dest: string; count: number };
+
 export default function SettingsPage() {
   const [s, setS] = useState<Settings | null>(null);
+  const [pairs, setPairs] = useState<Pair[]>([]);
 
   useEffect(() => {
     getSettings().then(setS);
+    (async () => {
+      const all = await db.cards.toArray();
+      const map = new Map<string, Pair>();
+      for (const c of all) {
+        const k = `${c.lang_src}→${c.lang_dest}`;
+        const cur = map.get(k);
+        if (cur) cur.count++;
+        else map.set(k, { src: c.lang_src, dest: c.lang_dest, count: 1 });
+      }
+      setPairs([...map.values()].sort((a, b) => b.count - a.count));
+    })();
   }, []);
 
   async function patch(p: Partial<Settings>) {
@@ -98,6 +112,32 @@ export default function SettingsPage() {
               />
             </div>
           ))}
+        </div>
+        <div>
+          <Label className="text-sm">Langues à réviser</Label>
+          <Select
+            value={s.lang_pair_filter ? `${s.lang_pair_filter.src}→${s.lang_pair_filter.dest}` : "all"}
+            onValueChange={(v) => {
+              if (v === "all") patch({ lang_pair_filter: null });
+              else {
+                const [src, dest] = v.split("→");
+                patch({ lang_pair_filter: { src, dest } });
+              }
+            }}
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les langues</SelectItem>
+              {pairs.map((p) => (
+                <SelectItem key={`${p.src}→${p.dest}`} value={`${p.src}→${p.dest}`}>
+                  {p.src} → {p.dest} ({p.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Combiné avec « Direction », vous pouvez aussi être interrogé dans le sens inverse.
+          </p>
         </div>
       </CardContent></Card>
 
