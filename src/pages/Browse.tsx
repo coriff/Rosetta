@@ -123,11 +123,16 @@ export default function Browse() {
             {filtered.length} / {allCards?.length ?? 0} carte(s)
           </p>
         </div>
-        {(status !== "all" || category !== "all" || pair !== "all" || interval !== "all" || q) && (
-          <Button variant="ghost" size="sm" onClick={resetFilters}>
-            Réinitialiser les filtres
+        <div className="flex items-center gap-2">
+          {(status !== "all" || category !== "all" || pair !== "all" || interval !== "all" || q) && (
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              Réinitialiser
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setAdding(true)}>
+            <Plus className="h-4 w-4" /> Ajouter
           </Button>
-        )}
+        </div>
       </header>
 
       <Card className="shadow-card">
