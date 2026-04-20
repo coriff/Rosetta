@@ -12,11 +12,25 @@ import type { Settings } from "@/types/card";
 import { toast } from "sonner";
 import { Download, RotateCcw, Trash2 } from "lucide-react";
 
+type Pair = { src: string; dest: string; count: number };
+
 export default function SettingsPage() {
   const [s, setS] = useState<Settings | null>(null);
+  const [pairs, setPairs] = useState<Pair[]>([]);
 
   useEffect(() => {
     getSettings().then(setS);
+    (async () => {
+      const all = await db.cards.toArray();
+      const map = new Map<string, Pair>();
+      for (const c of all) {
+        const k = `${c.lang_src}→${c.lang_dest}`;
+        const cur = map.get(k);
+        if (cur) cur.count++;
+        else map.set(k, { src: c.lang_src, dest: c.lang_dest, count: 1 });
+      }
+      setPairs([...map.values()].sort((a, b) => b.count - a.count));
+    })();
   }, []);
 
   async function patch(p: Partial<Settings>) {
