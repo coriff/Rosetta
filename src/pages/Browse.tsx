@@ -258,6 +258,8 @@ export default function Browse() {
           onOpenChange={(o) => !o && setEditing(null)}
         />
       )}
+
+      <AddCardDialog open={adding} onOpenChange={setAdding} knownPairs={knownPairs} />
     </div>
   );
 }
