@@ -8,11 +8,18 @@ import { Switch } from "@/components/ui/switch";
 import { db, getSettings, updateSettings } from "@/lib/db";
 import { exportToXlsx } from "@/lib/xlsx";
 import { newCardSRS } from "@/lib/srs";
-import type { Settings } from "@/types/card";
+import type { Category, Settings } from "@/types/card";
 import { toast } from "sonner";
 import { Download, RotateCcw, Trash2 } from "lucide-react";
 
 type Pair = { src: string; dest: string; count: number };
+
+const CATEGORY_OPTIONS: { value: "random" | Category; label: string }[] = [
+  { value: "random", label: "Random" },
+  { value: "word", label: "Seulement mots" },
+  { value: "expression", label: "Seulement expressions" },
+  { value: "sentence", label: "Seulement phrases" },
+];
 
 export default function SettingsPage() {
   const [s, setS] = useState<Settings | null>(null);
@@ -98,6 +105,25 @@ export default function SettingsPage() {
               <SelectItem value="src_to_dest">Source → Cible</SelectItem>
               <SelectItem value="dest_to_src">Cible → Source</SelectItem>
               <SelectItem value="both">Les deux (aléatoire)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-sm">Type de cartes</Label>
+          <Select
+            value={s.category_filter?.[0] ?? "random"}
+            onValueChange={(v) => {
+              if (v === "random") patch({ category_filter: null });
+              else patch({ category_filter: [v as Category] });
+            }}
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {CATEGORY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
