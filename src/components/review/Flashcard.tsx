@@ -57,7 +57,7 @@ export function Flashcard({ card, direction, onAnswer }: Props) {
           Afficher la réponse
         </Button>
       ) : (
-        <RatingButtons onRate={(q) => onAnswer(q, q >= 3)} />
+        <RatingButtons card={card} onRate={(q) => onAnswer(q, q >= 3)} />
       )}
     </div>
   );

@@ -85,7 +85,7 @@ export function TypingCard({ card, direction, onAnswer }: Props) {
           </Button>
         </div>
       ) : (
-        <RatingButtons onRate={(q) => onAnswer(q, checked.ok)} />
+        <RatingButtons card={card} onRate={(q) => onAnswer(q, checked.ok)} />
       )}
     </div>
   );
