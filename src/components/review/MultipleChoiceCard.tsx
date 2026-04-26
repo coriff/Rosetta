@@ -76,7 +76,7 @@ export function MultipleChoiceCard({ card, direction, onAnswer }: Props) {
       </UICard>
 
       {picked !== null && (
-        <RatingButtons onRate={(q) => onAnswer(q, isCorrect)} />
+        <RatingButtons card={card} onRate={(q) => onAnswer(q, isCorrect)} />
       )}
     </div>
   );

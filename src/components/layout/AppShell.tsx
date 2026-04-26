@@ -18,9 +18,16 @@ export default function AppShell() {
       <aside className="hidden md:flex md:w-60 lg:w-64 flex-col border-r bg-sidebar">
         <div className="px-6 py-5 border-b">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-primary shadow-elevated" />
+            <img
+              src="/rosetta-logo.svg"
+              alt="Logo Rosetta"
+              className="h-8 w-8 rounded-lg object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
             <div>
-              <p className="font-semibold leading-tight">Lexio</p>
+              <p className="font-semibold leading-tight">Rosetta</p>
               <p className="text-xs text-muted-foreground">Spaced repetition</p>
             </div>
           </div>

@@ -1,0 +1,16 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="40" y1="24" x2="190" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BE9FFF"/>
+      <stop offset="1" stop-color="#9E7DE0"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M48 52C48 34 64 20 84 20H136C160 20 178 40 178 64V200C178 220 162 236 140 236H92C68 236 48 218 48 196V52Z" fill="url(#bg)"/>
+
+  <line x1="60" y1="74" x2="166" y2="74" stroke="#7A54CA" stroke-width="4"/>
+  <line x1="60" y1="122" x2="166" y2="122" stroke="#7A54CA" stroke-width="4"/>
+  <line x1="60" y1="170" x2="166" y2="170" stroke="#7A54CA" stroke-width="4"/>
+
+  <text x="192" y="212" text-anchor="middle" font-size="150" font-family="Georgia, 'Times New Roman', serif" fill="#5E3DB1">R</text>
+</svg>
